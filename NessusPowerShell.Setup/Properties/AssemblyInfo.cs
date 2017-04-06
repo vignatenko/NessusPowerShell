@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NessusPowerShell.Test")]
+[assembly: AssemblyTitle("Nessus PowerShell Installation Module")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("NessusPowerShell.Test")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCompany("Vladyslav Ignatenko")]
+[assembly: AssemblyProduct("Nessus PowerShell Module")]
+[assembly: AssemblyCopyright("Copyright 2017 Vladyslav Ignatenko")]
+[assembly: AssemblyTrademark("This is free software. You may redistribute copies of it under the terms of the MIT License <https://github.com/vignatenko/NessusClient/blob/master/LICENSE>.")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("30ecb6b9-c5fe-44bd-88e8-81d352e674a4")]
+[assembly: Guid("44555887-c439-470c-944d-8866ec3d7067")]
 
 // Version information for an assembly consists of the following four values:
 //

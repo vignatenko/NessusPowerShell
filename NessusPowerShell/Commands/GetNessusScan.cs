@@ -7,6 +7,13 @@ using NessusClient.Scans;
 
 namespace NessusPowerShell.Commands
 {
+    /// <summary>
+    /// <para type="synopsis">Returns all scans.</para>
+    /// </summary>
+    /// <example>
+    /// <para type="description">Get all scans: </para>    
+    /// <para>Get-NessusScan</para>
+    /// </example>    
     [Cmdlet(VerbsCommon.Get, "NessusScan"), OutputType(typeof(Scan))]
     public class GetNessusScan: NessusCmdletBase
     {        
@@ -18,7 +25,7 @@ namespace NessusPowerShell.Commands
 
             var task = nessusConnection.GetScansAsync(cancellationToken);
             task.Wait(cancellationToken);
-            _scans = task.Result.OrderBy(x => x.Name).ToList();
+            _scans = task.Result.OrderBy(x => x.Name).ToList();            
 
             WriteVerbose($"{_scans.Count()} scan(s) found");
         }

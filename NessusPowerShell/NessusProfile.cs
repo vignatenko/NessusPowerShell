@@ -2,28 +2,36 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Management.Automation;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using NessusClient;
 
 namespace NessusPowerShell
 {
-    
+    /// <summary>
+    /// <para type="synopsis">In memory profile</para>
+    /// </summary>
     public class NessusProfile
     {
-        
+        /// <summary>
+        /// <para type="description">Nessus server</para>
+        /// </summary>
         public string Server { get; set; }
-        
+
+        /// <summary>
+        /// <para type="description">Nessus Port. By default 8834</para>
+        /// </summary>
         public int Port { get; set; } = 8834;
-        
+
+        /// <summary>
+        /// <para type="description">User Name</para>
+        /// </summary>
         public string UserName { get; set; }
 
-        
+        /// <summary>
+        /// <para type="description">Password as SecureString</para>
+        /// </summary>
         public SecureString Password { get; set; }
 
         public string ToProtectedString()
@@ -39,10 +47,8 @@ namespace NessusPowerShell
             buf.AddRange(entropy);
             
             using (var ms = new MemoryStream())
-            {
-                
-
-                var f = new BinaryFormatter();
+            {                
+                var formatter = new BinaryFormatter();
                 var profileData = new ProfileData
                 {
                     Server = Server,
@@ -50,7 +56,7 @@ namespace NessusPowerShell
                     UserName = UserName,
                     SecureString = Password.ToBytes()
                 };
-                f.Serialize(ms, profileData);
+                formatter.Serialize(ms, profileData);
 
                 Array.Clear(profileData.SecureString, 0, profileData.SecureString.Length);
 
@@ -70,8 +76,8 @@ namespace NessusPowerShell
             ProfileData profileData;
             using (var ms = new MemoryStream(ProtectedData.Unprotect(cipher, entropy, DataProtectionScope.CurrentUser)))
             {                
-                var f = new BinaryFormatter();
-                profileData = (ProfileData) f.Deserialize(ms);                                
+                var formatter = new BinaryFormatter();
+                profileData = (ProfileData) formatter.Deserialize(ms);                                
             }
             return new NessusProfile
             {

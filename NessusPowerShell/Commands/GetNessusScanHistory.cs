@@ -7,10 +7,24 @@ using NessusClient.Scans;
 
 namespace NessusPowerShell.Commands
 {
+    /// <summary>
+    /// <para type="synopsis">Returns scan history for all scans or for particular scan.</para>
+    /// </summary>
+    /// <example>
+    /// <para>Get histories of all scans:</para>    
+    /// <para>Get-NessusScanHistory</para>
+    /// </example>
+    /// <example>
+    /// <para>Get history of scan with ID = 10:</para> 
+    /// <para>Get-NessusScanHistory -Id 10</para>
+    /// </example>
     [Cmdlet(VerbsCommon.Get, "NessusScanHistory"), OutputType(typeof(ScanHistory))]
     public class GetNessusScanHistory : NessusCmdletBase
     {
-        [Parameter( ValueFromPipelineByPropertyName = true, HelpMessage = "The Scan Id from Get-NessusScan or Get-NessusScanHistory")]
+        /// <summary>
+        /// <para type="description">Optional scan's ID.</para>
+        /// </summary>
+        [Parameter( ValueFromPipelineByPropertyName = true, HelpMessage = "The Scan Id from Get-NessusScan")]
         public int Id { get; set; }
 
         

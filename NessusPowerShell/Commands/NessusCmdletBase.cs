@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,13 +8,29 @@ using NessusClient;
 
 namespace NessusPowerShell.Commands
 {
+    /// <summary>
+    /// Base class for NEssus cmdlets. Adds support of logon to Nessus server
+    /// </summary>
     public abstract class NessusCmdletBase: Cmdlet
     {
-        
+        /// <summary>
+        /// <para type="description">Optional path to profile file created with New-NessusProfile -OutFile path-to-file.</para>
+        /// <para type="description">If not specified, then default profile will be searched in these paths:</para>
+        /// <para type="description">.\nessus.profile.txt</para>
+        /// <para type="description">%appdata%\NessusPowerShell\Profiles\nessus.profile.txt</para>
+        /// <para type="description">%appdata%\nessus.profile.txt</para>
+        /// <para type="description">%userprofile%\Documents\NessusPowerShell\Profiles\nessus.profile.txt</para>
+        /// <para type="description">%userprofile%\Documents\nessus.profile.txt</para>
+        /// <para type="description">If profile cannot be loaded and -Profile parameter is not specified, then error will be reported</para>
+        /// </summary>
         [Parameter(HelpMessage = "Path to profile file created with New-NessusProfile")]
         public string ProfileFile { get; set; }
 
-        [Parameter]
+        /// <summary>
+        /// <para type="description">Optional profile data created with New-NessusProfile -InMemoryOnly.</para>
+        /// <para type="description">Can be used for temporary, not persistent profiles.</para>        
+        /// </summary>
+        [Parameter(HelpMessage = "In Memory profile created with New-NessusProfile -InMemoryOnly")]
         public NessusProfile Profile { get; set; }
 
         private INessusConnection _nessusConnection;
@@ -25,17 +42,49 @@ namespace NessusPowerShell.Commands
             _tokenSource = new CancellationTokenSource();
             if (Profile == null)
             {
-                if (string.IsNullOrWhiteSpace(ProfileFile))
+                
+                const string defaultFileName = "nessus.profile.txt";
+                var paths = new[]
                 {
-                    ProfileFile = ".\\nessus.profile.txt";
-                }
-                if (!File.Exists(ProfileFile))
+                    Path.GetFullPath(defaultFileName),
+
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "NessusPowerShell",
+                        "Profiles",
+                        defaultFileName),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), defaultFileName),
+
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                        "NessusPowerShell",
+                        "Profiles",
+                        defaultFileName),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), defaultFileName),
+
+                };
+                var profile = paths.Select(x =>
                 {
+                    try
+                    {
+                        return new {file = x, profile = NessusProfile.FromProtectedString(File.ReadAllText(x))};
+                    }
+                    catch
+                    {
+                        return new {file = x, profile = (NessusProfile) null};
+                    }
+
+                }).FirstOrDefault(x => x.profile != null);
+
+                if (profile == null)
+                {                    
                     throw new FileNotFoundException(
-                        $"Profile file {Path.GetFullPath(ProfileFile)} cannot be found. Please use -{nameof(ProfileFile)} parameter or create {ProfileFile} using New-NessusProfile");
+                        $"Profile file cannot be found. Please use -{nameof(ProfileFile)} parameter or create it using New-NessusProfile -OutFile <path to file> in one of default locations:{Environment.NewLine}{string.Join(Environment.NewLine, paths)}");
                 }
+
+                ProfileFile = profile.file;
+                Profile = profile.profile;
+
                 WriteVerbose($"Using {Path.GetFullPath(ProfileFile)} profile.");
-                Profile = NessusProfile.FromProtectedString(File.ReadAllText(ProfileFile));
+                
             }
 
             _nessusConnection = new NessusConnection(Profile.Server, Profile.Port, Profile.UserName, Profile.Password);

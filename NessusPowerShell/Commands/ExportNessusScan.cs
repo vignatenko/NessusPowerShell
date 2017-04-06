@@ -8,21 +8,48 @@ using NessusClient.Scans;
 
 namespace NessusPowerShell.Commands
 {
+    /// <summary>
+    /// <para type="synopsis">Exports nessus scan.</para>
+    /// </summary>
+    /// <example>
+    /// <para>Export all scans for the past 10 days as HTML.</para>
+    /// <para>File name of exported scan is constructed from name of scan and date of scan.</para>
+    /// <para> </para>    
+    /// <para>$allScans = Get-NessusScanHistory</para>
+    /// 
+    /// <para>$allScans</para>
+    /// <para>| where {$_.LastUpdateDate -GT [DateTimeOffset]::UtcNow.AddDays(-10)}</para>
+    /// <para>| select Id,HistoryId, @{Name="OutFile"; Expression={"{0}-{1:yyyyMMddHHmm}" -f($_.Name, $_.LastUpdateDate.ToLocalTime())}}</para>
+    /// <para>| Export-NessusScan -Format Html</para>    
+    /// </example>   
     [Cmdlet(VerbsData.Export, "NessusScan")]
     public class ExportNessusScan : NessusCmdletBase
     {
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        
+        /// <summary>
+        /// <para type="description">Scan ID as it returned by /scans endpoint (or Get-NessusScanHistory cmdlet).</para>
+        /// </summary>
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The Scan Id (returned by Get-NessusScanHistory)")]        
         public int Id { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        /// <summary>
+        /// <para type="description">History ID as it returned by /scans/:id endpoint (or Get-NessusScanHistory cmdlet).</para>
+        /// </summary>
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The History Scan Id (returned by Get-NessusScanHistory)")]
         public int HistoryId { get; set; }
 
-        [Parameter(ValueFromPipelineByPropertyName = true)]
+        /// <summary>
+        /// <para type="description">Path to file where to save the exported repot. Subfolders will be created automatically if required.</para>
+        /// <para type="description">If not specified, standard output will be used.</para>
+        /// </summary>
+        [Parameter(ValueFromPipelineByPropertyName = true, HelpMessage = "Output file path")]
         public string OutFile { get; set; }
 
-        [Parameter]
+        /// <summary>
+        /// <para type="description">Export format.</para>
+        /// <para type="description">If not specified, Nessus XML format will be used.</para>
+        /// </summary>
+        [Parameter(HelpMessage = "Export Format: Nessus(default), CSV, HTML, PDF")]
         public ExportFormat Format { get; set; } = ExportFormat.Nessus;
 
 
@@ -36,6 +63,9 @@ namespace NessusPowerShell.Commands
                 
                 if (string.IsNullOrWhiteSpace(Path.GetExtension(OutFile)))
                     filePath = $"{OutFile}.{Enum.GetName(typeof(ExportFormat), Format).ToLowerInvariant()}";
+
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
                 outStream = File.OpenWrite(filePath);
             }
             else 
@@ -61,11 +91,8 @@ namespace NessusPowerShell.Commands
             catch (AggregateException e)
             {
                 WriteError(new ErrorRecord(e.Flatten().InnerException, string.Empty, ErrorCategory.ConnectionError, nessusConnection));
-            }
-            
-        }
-
-       
+            }            
+        }       
     }
 
 }
