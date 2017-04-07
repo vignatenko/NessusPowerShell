@@ -1,4 +1,4 @@
-# Nessus PowerShell Module
+# Nessus PowerShell Module (binary)
 
 PowerShell module for [Tenable Nessus 6.x](http://www.tenable.com/products/nessus-vulnerability-scanner).
 
@@ -38,7 +38,7 @@ If this parameter is not specified and ```-Profile``` is omited, then cmdlets do
  Nessus connection profile file stores connection credentials in [encrypted](https://msdn.microsoft.com/en-us/library/2fh8203k(v=vs.110).aspx) form. 
 
  <a name="New-NessusProfile"></a>
- ### 1. New-NessusProfile: Create Nessus Connection Profile 
+ ### 1. New-NessusProfile: Creates Nessus Connection Profile 
  To create profile you can use this command(you will be promted for credentials):
  ```PowerShell
  PS> New-NessusProfile -OutFile %AppData%\NessusPowerShell\Profiles\nessus.profile.txt
@@ -51,8 +51,8 @@ If this parameter is not specified and ```-Profile``` is omited, then cmdlets do
  ```
 
  <a name="Test-NessusProfile"></a>
-  ### 2. Test-NessusProfile: Validate Nessus Connection Profile 
- To validate profile you can use this command(you will be promted for credentials):
+  ### 2. Test-NessusProfile: Validates Nessus Connection Profile 
+ To validate profile you can use this command:
  ```PowerShell
  PS> Test-NessusProfile -ProfileFile %AppData%\NessusPowerShell\Profiles\nessus.profile.txt -TryLoginToServer
  ```
