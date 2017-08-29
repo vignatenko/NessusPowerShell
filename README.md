@@ -16,7 +16,7 @@ Fill free to post feature requests.
 
 ### Installing
 
-Download [Nessus PowerShell Module.msi](https://github.com/vignatenko/NessusPowerShell/releases/download/v1.0/Nessus.PowerShell.Module.msi) and install it.
+Download [MSI installer for x64](https://github.com/vignatenko/NessusPowerShell/releases/download/v1.0.2/NessusPowerShellModule-x64.msi) or [MSI installer for x86](https://github.com/vignatenko/NessusPowerShell/releases/download/v1.0.2/NessusPowerShellModule-x86.msi) and install it.
 
 
 
