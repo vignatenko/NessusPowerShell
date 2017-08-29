@@ -70,7 +70,7 @@ namespace NessusPowerShell.Commands
                         }
                         catch (AggregateException e)
                         {
-                            WriteObject(CreateValidationResult(profile, e.Flatten().InnerException.Message));
+                            WriteObject(CreateValidationResult(profile, e.Flatten().InnerException?.Message));
                         }
                     }
                 }
@@ -93,7 +93,7 @@ namespace NessusPowerShell.Commands
             {
                 Profile = string.IsNullOrWhiteSpace(ProfileFile) ? "In-Memory Profile" : ProfileFile,
                 Server = profile != null ? $@"{profile.Server}:{profile.Port}" : @"Unable to read",
-                Status = status
+                Status = status ?? "Unknown"
             };
         }
     }
