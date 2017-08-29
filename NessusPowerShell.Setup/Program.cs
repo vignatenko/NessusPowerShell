@@ -29,13 +29,29 @@ namespace NessusPowerShell.Setup
                 ControlPanelInfo = {Manufacturer = "Vladyslav Ignatenko"},
                 Platform = Platform.x64,
                 Version = new Version(1, 0, 2, 0),                
-                LicenceFile = "license.rtf"
-                
+                LicenceFile = "license.rtf",
+                OutFileName = "NessusPowerShellModule-x64.msi"
+
             };
 
             
 
 
+            project.BuildMsi();
+
+            project = new Project("Nessus PowerShell Module x86",
+                new Dir(@"%ProgramFiles%\WindowsPowerShell\Modules\NessusPowerShell",
+                    files))
+            {
+                GUID = new Guid("6fe30b47-2577-43ad-9095-1861ba25889b"),
+                UI = WUI.WixUI_InstallDir,
+                ControlPanelInfo = { Manufacturer = "Vladyslav Ignatenko" },
+                Platform = Platform.x86,
+                Version = new Version(1, 0, 2, 0),
+                LicenceFile = "license.rtf",
+                OutFileName = "NessusPowerShellModule-x86.msi"
+
+            };
             project.BuildMsi();
         }
     }

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Management.Automation;
 
 namespace NessusPowerShell.Commands
@@ -69,9 +70,11 @@ namespace NessusPowerShell.Commands
             var protectedProfile = profile.ToProtectedString();
 
             NessusProfile.FromProtectedString(protectedProfile);
-
+            
             if (!string.IsNullOrWhiteSpace(OutFile))
             {
+                OutFile = Environment.ExpandEnvironmentVariables(OutFile);
+
                 Directory.CreateDirectory(Path.GetDirectoryName(OutFile));
 
                 File.WriteAllText(OutFile, protectedProfile);

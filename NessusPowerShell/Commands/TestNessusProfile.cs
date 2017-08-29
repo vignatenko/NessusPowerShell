@@ -17,7 +17,7 @@ namespace NessusPowerShell.Commands
     /// <para>Do validate in-memory profile:</para>
     /// <para>Test-NessusProfile -Profile $profile</para>
     /// </example>
-    [Cmdlet(VerbsDiagnostic.Test, "NessusProfile"), OutputType(typeof(PrpofileValidationResult))]
+    [Cmdlet(VerbsDiagnostic.Test, "NessusProfile"), OutputType(typeof(ProfileValidationResult))]
     public class TestNessusProfile: Cmdlet
     {
 
@@ -50,59 +50,54 @@ namespace NessusPowerShell.Commands
             {
 
 
-                var profile = Profile ?? NessusProfile.FromProtectedString(File.ReadAllText(ProfileFile));
+                var profile = Profile;
+                if (profile == null)
+                {
+                    ProfileFile = Environment.ExpandEnvironmentVariables(ProfileFile);
+                    WriteVerbose($@"Using profile from file ""{ProfileFile}""");
+
+                    profile = NessusProfile.FromProtectedString(File.ReadAllText(ProfileFile));
+                }
+                
                 if (TryLoginToServer)
                 {
-                    using (
-                        var c = new NessusConnection(profile.Server, profile.Port, profile.UserName, profile.Password))
+                    using (var c = new NessusConnection(profile.Server, profile.Port, profile.UserName, profile.Password))
                     {
                         try
                         {
-                            c.OpenAsync(new CancellationToken()).Wait();
-                            WriteObject(new PrpofileValidationResult
-                            {
-                                Profile = ProfileFile,
-                                Server = $"{profile.Server}:{profile.Port}",
-                                Status = "Login Successful"
-                            });
+                            c.OpenAsync(CancellationToken.None).Wait();
+                            WriteObject(CreateValidationResult(profile, @"Login Successful"));
                         }
                         catch (AggregateException e)
                         {
-
-                            WriteObject(new PrpofileValidationResult
-                            {
-                                Profile = ProfileFile,
-                                Server = $"{profile.Server}:{profile.Port}",
-                                Status = $"{e.Flatten().InnerException.Message}"
-                            });
+                            WriteObject(CreateValidationResult(profile, e.Flatten().InnerException.Message));
                         }
                     }
                 }
                 else
                 {
-                    WriteObject(new PrpofileValidationResult
-                    {
-                        Profile = ProfileFile,
-                        Server = $"{profile.Server}:{profile.Port}",
-                        Status = "OK"
-                    });
+                    WriteObject(CreateValidationResult(profile, @"OK"));
                 }
             }
             catch (Exception e)
             {
-                WriteObject(new PrpofileValidationResult
-                {
-                    Profile = ProfileFile,
-                    Server = "Unable to read",
-                    Status = e.Message
-                });
+                WriteObject(CreateValidationResult(null, e.Message));
             }
 
         }
 
 
+        private ProfileValidationResult CreateValidationResult(NessusProfile profile, string status)
+        {
+            return new ProfileValidationResult
+            {
+                Profile = string.IsNullOrWhiteSpace(ProfileFile) ? "In-Memory Profile" : ProfileFile,
+                Server = profile != null ? $@"{profile.Server}:{profile.Port}" : @"Unable to read",
+                Status = status
+            };
+        }
     }
-    class PrpofileValidationResult
+    class ProfileValidationResult
     {
         public string Profile { get; set; }
         public string Server { get; set; }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -42,46 +43,28 @@ namespace NessusPowerShell.Commands
             _tokenSource = new CancellationTokenSource();
             if (Profile == null)
             {
-                
-                const string defaultFileName = "nessus.profile.txt";
-                var paths = new[]
+                if (string.IsNullOrWhiteSpace(ProfileFile))
                 {
-                    Path.GetFullPath(defaultFileName),
+                    var defaultProfile = FindProfileInDefaultLocations();
 
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                        "NessusPowerShell",
-                        "Profiles",
-                        defaultFileName),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), defaultFileName),
-
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                        "NessusPowerShell",
-                        "Profiles",
-                        defaultFileName),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), defaultFileName),
-
-                };
-                var profile = paths.Select(x =>
-                {
-                    try
+                    if (defaultProfile == null)
                     {
-                        return new {file = x, profile = NessusProfile.FromProtectedString(File.ReadAllText(x))};
-                    }
-                    catch
-                    {
-                        return new {file = x, profile = (NessusProfile) null};
+                        throw new FileNotFoundException(
+                            $@"Profile file cannot be found. Please use -{
+                                    nameof(ProfileFile)
+                                } parameter or create it using New-NessusProfile -OutFile <path to file> in one of default locations:{
+                                    Environment.NewLine
+                                }{string.Join(Environment.NewLine, DefaultProfileLocations)}");
                     }
 
-                }).FirstOrDefault(x => x.profile != null);
-
-                if (profile == null)
-                {                    
-                    throw new FileNotFoundException(
-                        $"Profile file cannot be found. Please use -{nameof(ProfileFile)} parameter or create it using New-NessusProfile -OutFile <path to file> in one of default locations:{Environment.NewLine}{string.Join(Environment.NewLine, paths)}");
+                    ProfileFile = defaultProfile.Path;
+                    Profile = defaultProfile.Profile;
                 }
-
-                ProfileFile = profile.file;
-                Profile = profile.profile;
+                else
+                {
+                    ProfileFile = Environment.ExpandEnvironmentVariables(ProfileFile);
+                    Profile = NessusProfile.FromProtectedString(File.ReadAllText(ProfileFile));
+                }
 
                 WriteVerbose($"Using {Path.GetFullPath(ProfileFile)} profile.");
                 
@@ -111,8 +94,52 @@ namespace NessusPowerShell.Commands
 
         }
 
-        
+        private static DefaultProfileInfo FindProfileInDefaultLocations()
+        {
+            var paths = DefaultProfileLocations;
+            var profile = paths.Select(x =>
+            {
+                try
+                {
+                    return new DefaultProfileInfo { Path = x, Profile = NessusProfile.FromProtectedString(File.ReadAllText(x))};
+                }
+                catch
+                {
+                    return new DefaultProfileInfo() ;
+                }
+            }).FirstOrDefault(x => x.Profile != null);
+            return profile;
+        }
 
+        private static IEnumerable<string> DefaultProfileLocations
+        {
+            get
+            {
+                const string defaultFileName = "nessus.profile.txt";
+                var paths = new[]
+                {
+                    Path.GetFullPath(defaultFileName),
+
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "NessusPowerShell",
+                        "Profiles",
+                        defaultFileName),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), defaultFileName),
+
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                        "NessusPowerShell",
+                        "Profiles",
+                        defaultFileName),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), defaultFileName),
+                };
+                return paths;
+            }
+        }
+        private class DefaultProfileInfo
+        {
+            public string Path { get; set; }
+            public NessusProfile Profile { get; set; }
+        }
 
         protected override void EndProcessing()
         {
