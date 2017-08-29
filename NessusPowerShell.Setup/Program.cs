@@ -17,9 +17,9 @@ namespace NessusPowerShell.Setup
         public static void Main()
         {
 #if DEBUG
-            var files = Files.Select(x => new WixSharp.File(@"bin\debug\" + x)).ToArray();
+            var files = Files.Select(x => (WixEntity)new WixSharp.File(@"bin\debug\" + x)).ToArray();
 #else
-            var files = Files.Select(x => new WixSharp.File(@"bin\release\" + x)).ToArray();
+            var files = Files.Select(x => (WixEntity)new WixSharp.File(@"bin\release\" + x)).ToArray();
 #endif
             var project = new Project("Nessus PowerShell Module",
                 new Dir(@"%ProgramFiles%\WindowsPowerShell\Modules\NessusPowerShell",
