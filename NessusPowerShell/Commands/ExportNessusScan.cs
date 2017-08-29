@@ -55,44 +55,52 @@ namespace NessusPowerShell.Commands
 
         protected override void ProcessRecord(INessusConnection nessusConnection, CancellationToken cancellationToken)
         {
-            Stream outStream;
 
-            var filePath = OutFile;
-            if (!string.IsNullOrWhiteSpace(OutFile))
-            {
-                
-                if (string.IsNullOrWhiteSpace(Path.GetExtension(OutFile)))
-                    filePath = $"{OutFile}.{Enum.GetName(typeof(ExportFormat), Format).ToLowerInvariant()}";
-
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
-                outStream = File.OpenWrite(filePath);
-            }
-            else 
-            {
-                outStream = new MemoryStream();            
-            }
             try
             {
-                using (outStream)
+                if (!string.IsNullOrWhiteSpace(OutFile))
                 {
-                    nessusConnection.ExportAsync(Id, HistoryId, Format, outStream, cancellationToken).Wait(cancellationToken);
-                    var ms = outStream as MemoryStream;
-                    if (ms != null)
+                    OutFile = PrepareFileName(OutFile, Format);
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(OutFile));
+
+                    using (var outStream = File.OpenWrite(OutFile))
                     {
-                        WriteObject(Encoding.UTF8.GetString(ms.ToArray()));
+                        nessusConnection.ExportAsync(Id, HistoryId, Format, outStream, cancellationToken)
+                            .Wait(cancellationToken);
                     }
-                    else
+                    WriteVerbose($"Nessus scan saved into ${Path.GetFullPath(OutFile)}");
+                }
+                else
+                {
+                    using (var outStream = new MemoryStream())
                     {
-                        WriteVerbose($"Nessus scan saved into ${Path.GetFullPath(filePath)}");
+                        nessusConnection.ExportAsync(Id, HistoryId, Format, outStream, cancellationToken)
+                            .Wait(cancellationToken);
+                        WriteObject(Encoding.UTF8.GetString(outStream.ToArray()));
                     }
                 }
+
+
             }
             catch (AggregateException e)
             {
-                WriteError(new ErrorRecord(e.Flatten().InnerException, string.Empty, ErrorCategory.ConnectionError, nessusConnection));
-            }            
-        }       
+                WriteError(new ErrorRecord(e.Flatten().InnerException,
+                    string.Empty,
+                    ErrorCategory.ConnectionError,
+                    nessusConnection));
+            }
+        }
+
+        private static string  PrepareFileName(string outFile, ExportFormat format)
+        {
+            outFile = Environment.ExpandEnvironmentVariables(outFile);
+
+
+            if (string.IsNullOrWhiteSpace(Path.GetExtension(outFile)))
+                outFile = $"{outFile}.{Enum.GetName(typeof(ExportFormat), format).ToLowerInvariant()}";
+            return outFile;
+        }
     }
 
 }
