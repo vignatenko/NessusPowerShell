@@ -97,7 +97,8 @@ namespace NessusPowerShell.Commands
             };
         }
     }
-    class ProfileValidationResult
+
+    internal class ProfileValidationResult
     {
         public string Profile { get; set; }
         public string Server { get; set; }
