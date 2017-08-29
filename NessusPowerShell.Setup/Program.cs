@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
 using WixSharp;
+using WixSharp.CommonTasks;
 
 namespace NessusPowerShell.Setup
 {
-    class Program
+    public class Program
     {
         private static readonly string[] Files =
        {
@@ -13,7 +14,7 @@ namespace NessusPowerShell.Setup
             "NessusPowerShell.dll-Help.xml"
         };
 
-        static void Main()
+        public static void Main()
         {
 #if DEBUG
             var files = Files.Select(x => new WixSharp.File(@"bin\debug\" + x)).ToArray();
@@ -30,11 +31,11 @@ namespace NessusPowerShell.Setup
                 Platform = Platform.x64,
                 Version = new Version(1, 0, 2, 0),                
                 LicenceFile = "license.rtf",
-                OutFileName = "NessusPowerShellModule-x64.msi"
+                OutFileName = "NessusPowerShellModule-x64"
 
             };
 
-            
+            SetNetFxPrerequisite(project);
 
 
             project.BuildMsi();
@@ -49,10 +50,16 @@ namespace NessusPowerShell.Setup
                 Platform = Platform.x86,
                 Version = new Version(1, 0, 2, 0),
                 LicenceFile = "license.rtf",
-                OutFileName = "NessusPowerShellModule-x86.msi"
+                OutFileName = "NessusPowerShellModule-x86"
 
             };
+            SetNetFxPrerequisite(project);
             project.BuildMsi();
+        }
+
+        private static void SetNetFxPrerequisite(Project project)
+        {
+            project.SetNetFxPrerequisite("NETFRAMEWORK45>='#378389'", "Please, install .NET Framework 4.5 or later.");
         }
     }
 }

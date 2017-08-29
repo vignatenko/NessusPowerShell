@@ -5,10 +5,12 @@
     Changes to this file will be lost if the code is regenerated.
 </auto-generated>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
   <Product Id="6fe30b47-2577-43ad-9095-1861ca25a89c" Name="Nessus PowerShell Module x86" Language="1033" Codepage="Windows-1252" Version="1.0.2.0" UpgradeCode="6fe30b47-2577-43ad-9095-1861ba25889b" Manufacturer="Vladyslav Ignatenko">
     <Package InstallerVersion="200" Compressed="yes" Platform="x86" SummaryCodepage="Windows-1252" Languages="1033" />
     <Media Id="1" Cabinet="Nessus_PowerShell_Module_x86_.cab" EmbedCab="yes" />
+
+    <Condition Message="Please, install .NET Framework 4.5 or later."><![CDATA[NETFRAMEWORK45>="#378389"]]></Condition>
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder" Name="ProgramFilesFolder">
@@ -33,6 +35,8 @@
         </Directory>
       </Directory>
     </Directory>
+
+    <PropertyRef Id="NETFRAMEWORK45" />
 
     <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
 
